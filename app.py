@@ -58,21 +58,12 @@ LOW_LEVEL_CATEGORIES = [
 # AUTH HELPERS (Google OAuth)
 # ---------------------------
 def get_gspread_client_oauth() -> gspread.client.Client:
-    """
-    OAuth flow using a local client_secret.json. For Streamlit Cloud or local dev.
-    Steps:
-      1) Place your OAuth client file as 'client_secret.json'
-      2) First run will open a browser to authenticate
-      3) A 'token.json' file will be saved for reuse
-    """
-    if os.path.exists("token.json"):
-        creds = UserCredentials.from_authorized_user_file("token.json", SCOPES)
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file("client_secret.json", SCOPES)
-        creds = flow.run_local_server(port=0)
-        with open("token.json", "w") as token:
-            token.write(creds.to_json())
-    return gspread.authorize(creds)
+    """Authenticate with Google Sheets using Service Account credentials from Streamlit Secrets."""
+    from google.oauth2.service_account import Credentials
+
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"])
+    client = gspread.authorize(creds)
+    return client
 
 def open_or_create_worksheet(sh, title: str, headers: List[str] = None):
     try:
