@@ -325,24 +325,6 @@ def daily_view(ws_daily, ws_budgets):
 # ---------------------------
 # MAIN APP
 # ---------------------------
-def main():
-    st.set_page_config(page_title="Family Stewardship Dashboard", page_icon="📊", layout="wide")
-    st.title("Family Stewardship Dashboard")
-    st.caption("Modern neutrals • Faith-centered • Practical & clear")
-
-    # --- GOOGLE SHEET CONNECTION SETUP ---
-st.subheader("🔗 Google Sheet Connection")
-
-# Use the ID from secrets; hide manual entry once verified
-sheet_id = st.secrets.get("GOOGLE_SHEET_ID", DEFAULT_SHEET_ID)
-
-if not sheet_id:
-    st.error("❌ No Google Sheet ID found in Streamlit secrets. Please add it under 'Settings → Secrets'.")
-    st.stop()
-else:
-    st.success("✅ Connected to Google Sheet successfully.")
-
-    # --- GOOGLE SHEETS CONNECTION (with caching) ---
 @st.cache_resource(ttl=600)
 def get_gspread_client_cached():
     """Create and cache the Google Sheets client for 10 minutes."""
@@ -357,14 +339,32 @@ def init_sheets_cached(_client, sheet_id: str):
     ws_dash = open_or_create_worksheet(sh, "Dashboard_Data")
     return sh, ws_budgets, ws_daily, ws_dash
 
-try:
-    client = get_gspread_client_cached()
-    sh, ws_budgets, ws_daily, ws_dash = init_sheets_cached(client, DEFAULT_SHEET_ID)
-except Exception as e:
-    st.error(f"Google auth / sheet error: {e}")
-    st.stop()
+def main():
+    st.set_page_config(page_title="Family Stewardship Dashboard", page_icon="📊", layout="wide")
+    st.title("Family Stewardship Dashboard")
+    st.caption("Modern neutrals • Faith-centered • Practical & clear")
 
+    # --- GOOGLE SHEET CONNECTION SETUP ---
+    st.subheader("🔗 Google Sheet Connection")
 
+    # Use the ID from secrets; hide manual entry once verified
+    sheet_id = st.secrets.get("GOOGLE_SHEET_ID", DEFAULT_SHEET_ID)
+    if not sheet_id:
+        st.error("❌ No Google Sheet ID found in Streamlit secrets. Please add it under 'Settings → Secrets'.")
+        st.stop()
+    else:
+        st.success("✅ Connected to Google Sheet successfully.")
+        st.caption(f"📄 Connected Sheet ID: `{sheet_id}`")
+
+    # --- GOOGLE SHEETS CONNECTION (with caching) ---
+    try:
+        client = get_gspread_client_cached()
+        sh, ws_budgets, ws_daily, ws_dash = init_sheets_cached(client, sheet_id)
+    except Exception as e:
+        st.error(f"Google auth / sheet error: {e}")
+        st.stop()
+
+    # --- TABS (render on success) ---
     tab1, tab2, tab3 = st.tabs(["📈 Dashboard", "📋 Budgets", "🧾 Daily Spending"])
 
     with tab1:
