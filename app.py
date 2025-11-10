@@ -349,9 +349,9 @@ def get_gspread_client_cached():
     return get_gspread_client_oauth()
 
 @st.cache_data(ttl=60)
-def init_sheets_cached(client, sheet_id: str):
+def init_sheets_cached(_client, sheet_id: str):
     """Open all worksheets and cache references for 60 seconds."""
-    sh = client.open_by_key(sheet_id)
+    sh = _client.open_by_key(sheet_id)
     ws_budgets = open_or_create_worksheet(sh, "Budgets")
     ws_daily = open_or_create_worksheet(sh, "Daily_Spending")
     ws_dash = open_or_create_worksheet(sh, "Dashboard_Data")
