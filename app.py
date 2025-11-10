@@ -20,7 +20,8 @@ import plotly.express as px
 # ---------------------------
 # CONFIG
 # ---------------------------
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"]
 DEFAULT_SHEET_ID = st.secrets.get("GOOGLE_SHEET_ID", "")  # Put your Sheet ID into Streamlit secrets for security
 DEFAULT_RENTAL_MONTHLY = 2500.00  # You can change this in the UI
 DEFAULT_TITHE_PCT = 10.0          # You can change this in the UI
