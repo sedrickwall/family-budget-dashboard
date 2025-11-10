@@ -325,7 +325,7 @@ def daily_view(ws_daily, ws_budgets):
 # ---------------------------
 # MAIN APP
 # ---------------------------
-@st.cache_resource(ttl=3600)
+@st.cache_resource(ttl=600)
 def get_gspread_client_cached():
     """Create and cache the Google Sheets client for 10 minutes."""
     return get_gspread_client_oauth()
