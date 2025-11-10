@@ -62,7 +62,7 @@ def get_gspread_client_oauth() -> gspread.client.Client:
     """Authenticate with Google Sheets using Service Account credentials from Streamlit Secrets."""
     from google.oauth2.service_account import Credentials
 
-    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"])
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=SCOPES)
     client = gspread.authorize(creds)
     return client
 
