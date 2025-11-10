@@ -330,24 +330,40 @@ def main():
     st.title("Family Stewardship Dashboard")
     st.caption("Modern neutrals • Faith-centered • Practical & clear")
 
-    # Google OAuth connect
-    sheet_id = st.text_input("Google Sheet ID", value=os.environ.get("GOOGLE_SHEET_ID", DEFAULT_SHEET_ID))
-    if not sheet_id:
-        st.warning("Enter your Google Sheet ID to continue (share the Sheet with the Google account you will authenticate).")
-        st.stop()
+    # --- GOOGLE SHEET CONNECTION SETUP ---
+st.subheader("🔗 Google Sheet Connection")
 
-    with st.sidebar:
-        st.header("Google OAuth")
-        st.write("Upload **client_secret.json** (OAuth client) to the app folder. First run will prompt you to sign in.")
-        if st.button("Authenticate Google"):
-            pass  # Trigger visible button; actual flow runs lazily in get_gspread_client_oauth()
+# Use the ID from secrets; hide manual entry once verified
+sheet_id = st.secrets.get("GOOGLE_SHEET_ID", DEFAULT_SHEET_ID)
 
-    try:
-        client = get_gspread_client_oauth()
-        sh, ws_budgets, ws_daily, ws_dash = init_sheets(client, sheet_id)
-    except Exception as e:
-        st.error(f"Google auth / sheet error: {e}")
-        st.stop()
+if not sheet_id:
+    st.error("❌ No Google Sheet ID found in Streamlit secrets. Please add it under 'Settings → Secrets'.")
+    st.stop()
+else:
+    st.success("✅ Connected to Google Sheet successfully.")
+
+    # --- GOOGLE SHEETS CONNECTION (with caching) ---
+@st.cache_resource(ttl=600)
+def get_gspread_client_cached():
+    """Create and cache the Google Sheets client for 10 minutes."""
+    return get_gspread_client_oauth()
+
+@st.cache_data(ttl=60)
+def init_sheets_cached(client, sheet_id: str):
+    """Open all worksheets and cache references for 60 seconds."""
+    sh = client.open_by_key(sheet_id)
+    ws_budgets = open_or_create_worksheet(sh, "Budgets")
+    ws_daily = open_or_create_worksheet(sh, "Daily_Spending")
+    ws_dash = open_or_create_worksheet(sh, "Dashboard_Data")
+    return sh, ws_budgets, ws_daily, ws_dash
+
+try:
+    client = get_gspread_client_cached()
+    sh, ws_budgets, ws_daily, ws_dash = init_sheets_cached(client, DEFAULT_SHEET_ID)
+except Exception as e:
+    st.error(f"Google auth / sheet error: {e}")
+    st.stop()
+
 
     tab1, tab2, tab3 = st.tabs(["📈 Dashboard", "📋 Budgets", "🧾 Daily Spending"])
 
